@@ -1,2 +1,2 @@
 # crm
-Tkinter based com prototype
+Tkinter based CRM prototype
