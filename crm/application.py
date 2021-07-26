@@ -5,6 +5,8 @@ from base import Base
 
 
 class Application(Base):
+    """ORM type applications SQL table"""
+
     __tablename__ = 'applications'
 
     id = Column(Integer, primary_key=True)
@@ -18,10 +20,6 @@ class Application(Base):
     client = relationship("Client", backref=backref("application", uselist=False))
     employee = relationship("Employee", backref=backref("application", uselist=False))
 
-    # def __int__(self, creation_date, status, type):
-    #     self.creation_date = creation_date
-    #     self.status = status
-    #     self.type = type
 
     def attribute_list(self):
         return [self.creation_date, self.status, self.type, self.client_id, self.employee_id]

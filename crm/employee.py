@@ -4,6 +4,8 @@ from base import Base
 
 
 class Employee(Base):
+    """ORM type employees SQl table"""
+
     __tablename__ = 'employees'
 
     id = Column(Integer, primary_key=True)
@@ -13,3 +15,6 @@ class Employee(Base):
     def __init__(self, name, phone_number):
         self.name = name
         self.phone_number = phone_number
+
+    def attribute_list(self):
+        return [self.name, self.phone_number]
