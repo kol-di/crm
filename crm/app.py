@@ -3,7 +3,6 @@ from tkinter import ttk
 from sqlalchemy import and_, or_
 from tkcalendar import Calendar
 from datetime import date, datetime
-import string
 
 from base import session
 from application import Application
@@ -17,6 +16,7 @@ class App(tk.Tk):
 
     def __init__(self):
         """initialize general settings"""
+
         tk.Tk.__init__(self)
         self.frame = None
         self.switch_frame(StartPage)
@@ -25,6 +25,7 @@ class App(tk.Tk):
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one"""
+
         new_frame = frame_class(self)
         if self.frame is not None:
             self.frame.destroy()
@@ -86,13 +87,13 @@ class FilterPage(tk.Frame):
         """filters"""
         # type filter
         self.combo_type = ttk.Combobox(self, values=['Все', 'Ремонт', 'Обслуживание', 'Консультация'])
-        self.combo_type.grid(row=2, column=3, sticky='NW', padx=10, pady=10)
+        self.combo_type.grid(row=2, column=2, sticky='NW', padx=10, pady=10)
         self.combo_type.set('Все')
 
         # calendar for date choice
         cal = Calendar(self, font="Arial 14", selectmode='day', locale='en_US',
                        foreground="black", selectforeground="blue", year=2021, month=7, day=25)
-        cal.grid(row=2, column=0, columnspan=2, pady=10)
+        cal.grid(row=2, column=0, pady=10)
 
         # from/till dates
         from_till_frame = tk.LabelFrame(self)
@@ -110,7 +111,7 @@ class FilterPage(tk.Frame):
 
         # status checkboxes located in their own frame
         checkbox_frame = tk.LabelFrame(self)
-        checkbox_frame.grid(row=2, column=2, sticky='NW', padx=10, pady=10)
+        checkbox_frame.grid(row=2, column=1, sticky='NW', padx=10, pady=10)
         self.chkValue1 = tk.BooleanVar()
         self.chkValue1.set(True)
         self.chkValue2 = tk.BooleanVar()
@@ -127,16 +128,16 @@ class FilterPage(tk.Frame):
         """other widgets"""
         # error label
         self.error_label = tk.Label(self, text='')
-        self.error_label.grid(row=4, column = 0)
+        self.error_label.grid(row=4, column=0)
 
         # apply filter button
         apply_button_frame = tk.Frame(self)
-        apply_button_frame.grid(row=5, column=0, columnspan=5, pady=30)
-        tk.Button(apply_button_frame, text='Применить', command=lambda: self._apply_filter()).pack()
+        apply_button_frame.grid(row=5, column=0, columnspan=5, pady=5)
+        tk.Button(apply_button_frame, text='Применить', command=lambda: self._apply_filter(), width=10, height=2).pack()
 
         # return button
         tk.Button(self, text='Назад',
-                  command=lambda: master.switch_frame(StartPage)).grid(row=6, column=4, pady=50)
+                  command=lambda: master.switch_frame(StartPage)).grid(row=6, column=3, pady=50)
 
 
     def _change_from_label(self, date):
@@ -189,11 +190,15 @@ class FilterPage(tk.Frame):
 
         # footer
         label = tk.Label(applications_frame, text='Дата')
-        label.grid(row=0, column=0, columnspan=2, sticky='W')
+        label.grid(row=0, column=0, sticky='W')
         label = tk.Label(applications_frame, text='Статус')
-        label.grid(row=0, column=2, sticky='W')
+        label.grid(row=0, column=1, sticky='W')
         label = tk.Label(applications_frame, text='Тип')
+        label.grid(row=0, column=2, sticky='W')
+        label = tk.Label(applications_frame, text='Клиент')
         label.grid(row=0, column=3, sticky='W')
+        label = tk.Label(applications_frame, text='Сотрудник')
+        label.grid(row=0, column=4, sticky='W')
 
         # list all applications ordered by date
         for index, application in enumerate(applications):
@@ -344,11 +349,16 @@ class DataManagementPage(tk.Frame):
         else:
             self.emp_add_failed["text"] = ""
 
+        # add employee to the databse
         new_emp = Employee(name=self._capitalise_name(self.emp_name_entry.get()), phone_number=self.emp_phone_number_entry.get())
         session.add(new_emp)
         session.commit()
+
+        # erase text from entry widgets
         self.emp_name_entry.delete(0, "end")
         self.emp_phone_number_entry.delete(0, "end")
+
+        # output updated list
         self._output_employees()
 
 
@@ -466,11 +476,17 @@ class DataManagementPage(tk.Frame):
         # add and output new client record
         new_client = Client(name=self._capitalise_name(self.client_name_entry.get()),
                             phone_number=self.client_phone_number_entry.get(), tg=self.client_tg_entry.get())
+
+        # add client to the database
         session.add(new_client)
         session.commit()
+
+        # erase text from entry widgets
         self.client_name_entry.delete(0, "end")
         self.client_phone_number_entry.delete(0, "end")
         self.client_tg_entry.delete(0, "end")
+
+        # output updated list
         self._output_clients()
 
 
@@ -609,13 +625,18 @@ class DataManagementPage(tk.Frame):
             self.app_add_failed["text"] = "Неправильно введена дата. Введите дату в формате дд.мм.гггг"
             return None
 
+        # add application to the database
         session.add(new_app)
         session.commit()
+
+        # erase text from entry widgets
         self.app_creation_date_entry.delete(0, "end")
         self.app_status_combo.delete(0, "end")
         self.app_type_combo.delete(0, "end")
         self.app_client_combo.delete(0, "end")
         self.app_emp_combo.delete(0, "end")
+
+        # output updated list
         self._output_apps()
 
 
