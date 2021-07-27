@@ -22,7 +22,7 @@ class Application(Base):
 
 
     def attribute_list(self):
-        return [self.creation_date, self.status, self.type, self.client_id, self.employee_id]
+        return [self.creation_date, self.status, self.type, self.client.name, self.employee.name]
 
     def __repr__(self):
         rep = str(self.creation_date) + ' ' + self.status + ' ' + self.type

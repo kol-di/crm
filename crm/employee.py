@@ -17,4 +17,4 @@ class Employee(Base):
         self.phone_number = phone_number
 
     def attribute_list(self):
-        return [self.name, self.phone_number]
+        return [self.name, self.phone_number, self.id]

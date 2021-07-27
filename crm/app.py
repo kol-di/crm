@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from sqlalchemy import inspect, select, and_, or_
-from tkcalendar import Calendar, DateEntry
-from datetime import date
+from sqlalchemy import and_, or_
+from tkcalendar import Calendar
+from datetime import date, datetime
+import string
 
 from base import session
 from application import Application
@@ -245,37 +246,44 @@ class DataManagementPage(tk.Frame):
         # initial settings
         self.emp_menu = tk.Toplevel()
         self.emp_menu.title("Сотрудники")
-        self.emp_menu.geometry("600x600")
+        self.emp_menu.geometry("650x600")
         self.emp_scrollable_frame = None
 
         # main label
         tk.Label(self.emp_menu, text="Список сотрудников").grid(row=0, column=0, columnspan=3, pady=10)
 
+        # table footer
+        emps_footer_frame = tk.LabelFrame(self.emp_menu)
+        emps_footer_frame.grid(row=1, column=0)
+        tk.Label(emps_footer_frame, text="Имя", width=19).grid(row=0, column=0, sticky="w")
+        tk.Label(emps_footer_frame, text="Номер телефона", width=19).grid(row=0, column=1, sticky="w")
+        tk.Label(emps_footer_frame, text="ID", width=19).grid(row=0, column=3, sticky="w")
+
         # output employees
         self._output_employees()
 
         # add employee label
-        tk.Label(self.emp_menu, text="добавить сотрудника:").grid(row=2, column=0, columnspan=3, pady=10)
+        tk.Label(self.emp_menu, text="Новый сотрудник", font="Arial 14").grid(row=3, column=0, columnspan=3, pady=10)
 
         # add employee entries
         add_employee_frame = tk.Frame(self.emp_menu)
-        add_employee_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        add_employee_frame.grid(row=4, column=0, columnspan=3, pady=10)
 
+        tk.Label(add_employee_frame, text="Имя:").grid(row=0, column=0, sticky="w")
         self.emp_name_entry = tk.Entry(add_employee_frame)
-        self.emp_name_entry.insert(0, "Имя")
-        self.emp_name_entry.pack()
+        self.emp_name_entry.grid(row=0, column=1)
 
+        tk.Label(add_employee_frame, text="Номер телефона:").grid(row=1, column=0, sticky="w")
         self.emp_phone_number_entry = tk.Entry(add_employee_frame)
-        self.emp_phone_number_entry.insert(0, "Номер телефона")
-        self.emp_phone_number_entry.pack()
+        self.emp_phone_number_entry.grid(row=1, column=1)
 
         # "add employee" button
         add_emp_button = tk.Button(self.emp_menu, text="Добавить", command=self._add_employee)
-        add_emp_button.grid(row=4, column=0, columnspan=3, pady=10)
+        add_emp_button.grid(row=5, column=0, columnspan=3, pady=10)
 
         # alert label
         self.emp_add_failed = tk.Label(self.emp_menu, text="")
-        self.emp_add_failed.grid(row=5, column=0, pady=5)
+        self.emp_add_failed.grid(row=6, column=0, pady=5)
 
 
     def _output_employees(self):
@@ -289,8 +297,8 @@ class DataManagementPage(tk.Frame):
             self.emp_scrollable_frame.destroy()
 
         # create and configure new scrollable frame
-        self.emp_scrollable_frame = ScrollableFrame(self.emp_menu, width=500)
-        self.emp_scrollable_frame.grid(row=1, column=0, columnspan=3, pady=10)
+        self.emp_scrollable_frame = ScrollableFrame(self.emp_menu, width=600)
+        self.emp_scrollable_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
         # print employees, each in a different frame
         for index, employee in enumerate(emps):
@@ -308,7 +316,7 @@ class DataManagementPage(tk.Frame):
             for value in attributes:
                 label = tk.Label(emp_frame, text=str(value))
                 label.grid(row=0, column=col_num, sticky='W')
-                label.config(width=20)
+                label.config(width=19)
                 col_num += 1
 
             # delete button
@@ -336,7 +344,7 @@ class DataManagementPage(tk.Frame):
         else:
             self.emp_add_failed["text"] = ""
 
-        new_emp = Employee(name=self.emp_name_entry.get(), phone_number=self.emp_phone_number_entry.get())
+        new_emp = Employee(name=self._capitalise_name(self.emp_name_entry.get()), phone_number=self.emp_phone_number_entry.get())
         session.add(new_emp)
         session.commit()
         self.emp_name_entry.delete(0, "end")
@@ -352,41 +360,49 @@ class DataManagementPage(tk.Frame):
         # initial settings
         self.client_menu = tk.Toplevel()
         self.client_menu.title("Клиенты")
-        self.client_menu.geometry("700x600")
+        self.client_menu.geometry("800x600")
         self.client_scrollable_frame = None
 
         # main label
         tk.Label(self.client_menu, text="Список клиентов").grid(row=0, column=0, columnspan=3, pady=10)
 
+        # table footer
+        clients_footer_frame = tk.LabelFrame(self.client_menu)
+        clients_footer_frame.grid(row=1, column=0)
+        tk.Label(clients_footer_frame, text="Имя", width=18).grid(row=0, column=0, sticky="w")
+        tk.Label(clients_footer_frame, text="Номер телефона", width=18).grid(row=0, column=1, sticky="w")
+        tk.Label(clients_footer_frame, text="Телеграм", width=18).grid(row=0, column=2, sticky="w")
+        tk.Label(clients_footer_frame, text="ID", width=18).grid(row=0, column=3, sticky="w")
+
         # output clients
         self._output_clients()
 
         # client label
-        tk.Label(self.client_menu, text="добавить клиента:").grid(row=2, column=0, columnspan=3, pady=10)
+        tk.Label(self.client_menu, text="Новый клиент", font="Arial 14").grid(row=3, column=0, columnspan=3, pady=10)
 
         # clients' entries
         add_client_frame = tk.Frame(self.client_menu)
-        add_client_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        add_client_frame.grid(row=4, column=0, columnspan=3, pady=10)
 
+        tk.Label(add_client_frame, text="Имя:").grid(row=0, column=0, sticky="w")
         self.client_name_entry = tk.Entry(add_client_frame)
-        self.client_name_entry.insert(0, "Имя")
-        self.client_name_entry.pack()
+        self.client_name_entry.grid(row=0, column=1)
 
+        tk.Label(add_client_frame, text="Номер телефона:").grid(row=1, column=0, sticky="w")
         self.client_phone_number_entry = tk.Entry(add_client_frame)
-        self.client_phone_number_entry.insert(0, "Номер телефона")
-        self.client_phone_number_entry.pack()
+        self.client_phone_number_entry.grid(row=1, column=1)
 
+        tk.Label(add_client_frame, text="Телеграм:").grid(row=2, column=0, sticky="w")
         self.client_tg_entry = tk.Entry(add_client_frame)
-        self.client_tg_entry.insert(0, "Телеграм")
-        self.client_tg_entry.pack()
+        self.client_tg_entry.grid(row=2, column=1)
 
         # "add client" button
         add_client_button = tk.Button(self.client_menu, text="Добавить", command=self._add_client)
-        add_client_button.grid(row=4, column=0, columnspan=3, pady=10)
+        add_client_button.grid(row=5, column=0, columnspan=3, pady=10)
 
         # alert label
         self.client_add_failed = tk.Label(self.client_menu, text="")
-        self.client_add_failed.grid(row=5, column=0, pady=5)
+        self.client_add_failed.grid(row=6, column=0, pady=5)
 
 
     def _output_clients(self):
@@ -400,8 +416,8 @@ class DataManagementPage(tk.Frame):
             self.client_scrollable_frame.destroy()
 
         # create new scrollable frame
-        self.client_scrollable_frame = ScrollableFrame(self.client_menu, width=650)
-        self.client_scrollable_frame.grid(row=1, column=0, columnspan=3, pady=10)
+        self.client_scrollable_frame = ScrollableFrame(self.client_menu, width=750)
+        self.client_scrollable_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
         # print clients, each in a different frame
         for index, client in enumerate(clients):
@@ -419,7 +435,7 @@ class DataManagementPage(tk.Frame):
             for value in attributes:
                 label = tk.Label(client_frame, text=str(value))
                 label.grid(row=0, column=col_num, sticky='W')
-                label.config(width=20)
+                label.config(width=18)
                 col_num += 1
 
             # delete button
@@ -448,8 +464,8 @@ class DataManagementPage(tk.Frame):
             self.client_add_failed["text"] = ""
 
         # add and output new client record
-        new_client = Client(name=self.client_name_entry.get(), phone_number=self.client_phone_number_entry.get(),
-                                                               tg=self.client_tg_entry.get())
+        new_client = Client(name=self._capitalise_name(self.client_name_entry.get()),
+                            phone_number=self.client_phone_number_entry.get(), tg=self.client_tg_entry.get())
         session.add(new_client)
         session.commit()
         self.client_name_entry.delete(0, "end")
@@ -466,49 +482,60 @@ class DataManagementPage(tk.Frame):
         # initial settings
         self.app_menu = tk.Toplevel()
         self.app_menu.title("Заявки")
-        self.app_menu.geometry("700x600")
+        self.app_menu.geometry("900x700")
         self.app_scrollable_frame = None
 
         # main label
         tk.Label(self.app_menu, text="Список заявок").grid(row=0, column=0, columnspan=3, pady=10)
 
+        # table footer
+        apps_footer_frame = tk.LabelFrame(self.app_menu)
+        apps_footer_frame.grid(row=1, column=0)
+        tk.Label(apps_footer_frame, text="Дата", width=17).grid(row=0, column=0, sticky="w")
+        tk.Label(apps_footer_frame, text="Статус", width=17).grid(row=0, column=1, sticky="w")
+        tk.Label(apps_footer_frame, text="Тип", width=17).grid(row=0, column=2, sticky="w")
+        tk.Label(apps_footer_frame, text="Клиент", width=17).grid(row=0, column=3, sticky="w")
+        tk.Label(apps_footer_frame, text="Сотрудник", width=17).grid(row=0, column=4, sticky="w")
+
         # output apps
         self._output_apps()
 
         # app label
-        tk.Label(self.app_menu, text="добавить заявку:").grid(row=2, column=0, columnspan=3, pady=10)
+        tk.Label(self.app_menu, text="Новая заявка", font="Arial 14").grid(row=3, column=0, columnspan=3, pady=10)
 
-        # apps' entries
+        # apps' entries and respective labels
         add_app_frame = tk.Frame(self.app_menu)
-        add_app_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        add_app_frame.grid(row=4, column=0, columnspan=3, pady=10)
 
+        tk.Label(add_app_frame, text="Дата:").grid(row=0, column=0, sticky="w")
         self.app_creation_date_entry = tk.Entry(add_app_frame)
-        self.app_creation_date_entry.insert(0, "Дата подачи")
-        self.app_creation_date_entry.pack()
+        self.app_creation_date_entry.grid(row=0, column=1)
 
-        self.app_status_entry = tk.Entry(add_app_frame)
-        self.app_status_entry.insert(0, "Статус")
-        self.app_status_entry.pack()
+        tk.Label(add_app_frame, text="Статус:").grid(row=1, column=0, sticky="w")
+        self.app_status_combo = ttk.Combobox(add_app_frame, values=["открыта", "в работе", "закрыта"])
+        self.app_status_combo.grid(row=1, column=1)
 
-        self.app_type_entry = tk.Entry(add_app_frame)
-        self.app_type_entry.insert(0, "Тип")
-        self.app_type_entry.pack()
+        tk.Label(add_app_frame, text="Тип:").grid(row=2, column=0, sticky="w")
+        self.app_type_combo = ttk.Combobox(add_app_frame, values=['Ремонт', 'Обслуживание', 'Консультация'])
+        self.app_type_combo.grid(row=2, column=1)
 
-        self.app_client_entry = tk.Entry(add_app_frame)
-        self.app_client_entry.insert(0, "Клиент")
-        self.app_client_entry.pack()
+        tk.Label(add_app_frame, text="Клиент:").grid(row=3, column=0, sticky="w")
+        clients = [(client.name, client.id) for client in session.query(Client).distinct()]
+        self.app_client_combo = ttk.Combobox(add_app_frame, values=[str(client[1]) + ". " + client[0] for client in clients])
+        self.app_client_combo.grid(row=3, column=1)
 
-        self.app_emp_entry = tk.Entry(add_app_frame)
-        self.app_emp_entry.insert(0, "Ответственный сотрудник")
-        self.app_emp_entry.pack()
+        tk.Label(add_app_frame, text="Сотрудник:").grid(row=4, column=0, sticky="w")
+        emps = [(employee.name, employee.id) for employee in session.query(Employee).distinct()]
+        self.app_emp_combo = ttk.Combobox(add_app_frame, values=[str(emp[1]) + ". " + emp[0] for emp in emps])
+        self.app_emp_combo.grid(row=4, column=1)
 
         # "add app" button
         add_app_button = tk.Button(self.app_menu, text="Добавить", command=self._add_app)
-        add_app_button.grid(row=4, column=0, columnspan=3, pady=10)
+        add_app_button.grid(row=5, column=0, columnspan=3, pady=10)
 
         # alert label
         self.app_add_failed = tk.Label(self.app_menu, text="")
-        self.app_add_failed.grid(row=5, column=0, pady=5)
+        self.app_add_failed.grid(row=6, column=0, pady=5)
 
 
     def _output_apps(self):
@@ -522,8 +549,8 @@ class DataManagementPage(tk.Frame):
             self.app_scrollable_frame.destroy()
 
         # create new scrollable frame
-        self.app_scrollable_frame = ScrollableFrame(self.app_menu, width=650)
-        self.app_scrollable_frame.grid(row=1, column=0, columnspan=3, pady=10)
+        self.app_scrollable_frame = ScrollableFrame(self.app_menu, width=860)
+        self.app_scrollable_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
         # print apps, each in a different frame
         for index, app in enumerate(apps):
@@ -541,7 +568,7 @@ class DataManagementPage(tk.Frame):
             for value in attributes:
                 label = tk.Label(app_frame, text=str(value))
                 label.grid(row=0, column=col_num, sticky='W')
-                label.config(width=20)
+                label.config(width=17)
                 col_num += 1
 
             # delete button
@@ -562,24 +589,49 @@ class DataManagementPage(tk.Frame):
     def _add_app(self):
         """add app to the database and output updated list"""
 
-        # add only if input is valid
-        if not self.app_creation_date_entry.get() or not self.app_status_entry.get() or \
-                    not self.app_type_entry.get() or not self.app_client_entry.get() or \
-                    not self.app_emp_entry.get():
+        # add only if input is not empty
+        if not self.app_creation_date_entry.get() or not self.app_status_combo.get() or \
+                    not self.app_type_combo.get() or not self.app_client_combo.get() or \
+                    not self.app_emp_combo.get():
             self.app_add_failed["text"] = "Все поля обязательны для заполнения"
             return None
         else:
             self.app_add_failed["text"] = ""
 
-        # add and output new app record
-        new_app = Application(creation_date=self.self.app_creation_date_entry.get(), status=self.app_status_entry.get(),
-                                       type=self.app_type_entry.get(), client_id=self.app_client_entry.get(),
-                                       employee_id=self.app_emp_entry.get())
+        # try to add and output new app record if date format is valid
+        try:
+            new_app = Application(creation_date=datetime.strptime(self.app_creation_date_entry.get(), '%d.%m.%Y'),
+                                  status=self.app_status_combo.get(), type=self.app_type_combo.get(),
+                                  client_id=int(self.app_client_combo.get().split('.')[0]),
+                                  employee_id=int(self.app_emp_combo.get().split('.')[0]))
+            self.app_add_failed["text"] = ""
+        except ValueError:
+            self.app_add_failed["text"] = "Неправильно введена дата. Введите дату в формате дд.мм.гггг"
+            return None
+
         session.add(new_app)
         session.commit()
         self.app_creation_date_entry.delete(0, "end")
-        self.app_status_entry.delete(0, "end")
-        self.app_type_entry.delete(0, "end")
-        self.app_client_entry.delete(0, "end")
-        self.app_emp_entry.delete(0, "end")
+        self.app_status_combo.delete(0, "end")
+        self.app_type_combo.delete(0, "end")
+        self.app_client_combo.delete(0, "end")
+        self.app_emp_combo.delete(0, "end")
         self._output_apps()
+
+
+    """common functions"""
+    def _capitalise_name(self, name):
+        """makes first letter of name and surname capital and erases redundant spaces"""
+
+        # capitalise names
+        name = ' ' + name
+        for index in range(len(name) - 2):
+            if name[index] == ' ' and name[index+1] != ' ':
+                if name[index+1].islower():
+                    name = name[:index+1] + name[index+1].upper() + name[index+2:]
+
+        # delete redundant spaces
+        name = " ".join(name.split())
+
+        return name
+

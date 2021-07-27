@@ -18,4 +18,4 @@ class Client(Base):
         self.tg = tg
 
     def attribute_list(self):
-        return [self.name, self.phone_number, self.tg]
+        return [self.name, self.phone_number, self.tg, self.id]
